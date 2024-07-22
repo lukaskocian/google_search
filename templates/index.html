@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Search</title>
+    <script>
+        let searchInterval;
+
+        function fetchResults() {
+            const query = document.getElementById("query").value;
+            const searchingText = document.getElementById("searchingText");
+            searchingText.style.display = "inline";
+            let dotCount = 0;
+            searchInterval = setInterval(() => {
+                searchingText.innerText = "searching" + ".".repeat(dotCount % 3 + 1);
+                dotCount++;
+            }, 500);
+            
+            fetch(`/search?query=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    clearInterval(searchInterval);
+                    searchingText.style.display = "none";
+                    const resultsDiv = document.getElementById("results");
+                    resultsDiv.innerHTML = "";
+                    data.results.forEach(result => {
+                        const resultElement = document.createElement("div");
+                        resultElement.innerHTML = `<h3><a href="${result.link}">${result.title}</a></h3><p>${result.snippet}</p>`;
+                        resultsDiv.appendChild(resultElement);
+                    });
+                    document.getElementById("downloadButton").style.display = "block";
+                });
+        }
+
+        function downloadCSV() {
+            const query = document.getElementById("query").value;
+            window.location.href = `/download_csv?query=${query}`;
+        }
+    </script>
+</head>
+<body>
+    <h1>Google Search</h1>
+    <input type="text" id="query" placeholder="Search...">
+    <button onclick="fetchResults()">Search</button>
+    <span id="searchingText" style="display:none; margin-left: 10px;">searching...</span> <!-- Highlighted change -->
+    <div id="results"></div>
+    <button id="downloadButton" style="display:none;" onclick="downloadCSV()">Download CSV</button>
+</body>
+</html>
